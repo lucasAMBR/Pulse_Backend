@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/auth")
-public class TesteController {
+@RequestMapping("/api/v1/segundo")
+public class SegundoController {
     
     @GetMapping("/teste")
     public String handleTeste(){
