@@ -1,9 +1,7 @@
 package com.LHDev.PulseChating.security;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +9,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.LHDev.PulseChating.models.User;
-import com.LHDev.PulseChating.repositories.UserRepository;
-import com.LHDev.PulseChating.utils.JwtUtils;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,54 +20,39 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     
     @Autowired
-    JwtUtils jwtUtils;
-
-    @Autowired
-    UserRepository userRepository;
+    private JwtService jwtService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException{
+    protected void doFilterInternal(
+        HttpServletRequest request, 
+        HttpServletResponse response, 
+        FilterChain filterChain) throws ServletException, IOException{
 
-        Optional<String> jwtOpt = extractJwtFromCookie(request);
-        if(jwtOpt.isEmpty()){
+            String path = request.getRequestURI();
+            if (path.startsWith("/api/v1/auth/")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            String token = null;
+
+            if(request.getCookies() != null){
+                for(Cookie cookie : request.getCookies()){
+                    if("token".equals(cookie.getName())){
+                        token = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+
+            if(token != null && jwtService.validateToken(token)){
+                UUID userId = jwtService.extractUserid(token);
+
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null, List.of());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+
             filterChain.doFilter(request, response);
-            return;
         }
 
-        String token = jwtOpt.get();
-
-        if(!jwtUtils.validateToken(token)){
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT");
-            return;
-        }
-
-        String csrfFromHeader = request.getHeader("X-CSRF-Token");
-        String csrfFromJwt = jwtUtils.extractCsrfToken(token);
-
-        if (csrfFromHeader == null || !csrfFromHeader.equals(csrfFromJwt)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "CSRF token inválido");
-            return;
-        }
-
-        UUID userId = jwtUtils.extractUserid(token);
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("user not found"));
-
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-            user, null, Collections.emptyList()
-        );
-
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        filterChain.doFilter(request, response);
-    }
-
-    private Optional<String> extractJwtFromCookie(HttpServletRequest request) {
-        if (request.getCookies() == null) return Optional.empty();
-
-        return Arrays.stream(request.getCookies())
-                .filter(cookie -> "jwtToken".equals(cookie.getName()))
-                .map(Cookie::getValue)
-                .findFirst();
-    }
 }

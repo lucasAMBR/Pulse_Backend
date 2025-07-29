@@ -1,4 +1,4 @@
-package com.LHDev.PulseChating.utils;
+package com.LHDev.PulseChating.security;
 
 import java.security.Key;
 import java.util.Date;
@@ -13,7 +13,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
 @Component
-public class JwtUtils {
+public class JwtService {
     
     private final String jwtSecret = "uma-chave-secreta-bem-grande-e-segura-para-o-jwt-2025";
     private final long jwtExpirationMs = 86400000;
