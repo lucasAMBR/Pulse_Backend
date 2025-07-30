@@ -41,7 +41,11 @@ public class User {
     @NotBlank
     private String password;
 
+    @NotNull
     private String avatarUrl;
+
+    @NotNull
+    private boolean isPrivateProfile;
 
     @NotNull
     private boolean isVerified;
@@ -61,4 +65,18 @@ public class User {
             this.id = UuidCreator.getTimeOrderedEpoch();
         }
     }
+
+    public User(@NotBlank String name, @Email @NotBlank String email, @NotBlank String password,
+            @NotNull String avatarUrl, @NotNull boolean isPrivateProfile, @NotNull boolean isVerified,
+            @NotNull AccountStatus accountStatus) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.avatarUrl = avatarUrl;
+        this.isPrivateProfile = isPrivateProfile;
+        this.isVerified = isVerified;
+        this.accountStatus = accountStatus;
+    }
+
+    
 }
