@@ -61,4 +61,5 @@ public class AuthService {
             throw new LoginFailedException("Email or Passsword incorrect");
         }
     }
+
 }

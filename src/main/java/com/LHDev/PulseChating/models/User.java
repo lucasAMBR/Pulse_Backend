@@ -10,6 +10,8 @@ import com.LHDev.PulseChating.common.enums.AccountStatus;
 import com.github.f4b6a3.uuid.UuidCreator;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -51,6 +53,7 @@ public class User {
     private boolean isVerified;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private AccountStatus accountStatus;
 
     @CreationTimestamp
